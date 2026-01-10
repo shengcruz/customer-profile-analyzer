@@ -459,11 +459,11 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // Configuration - 硅基流动 API (SiliconFlow)
+        // Configuration - 火山引擎 豆包 API (支持图片分析)
         const API_CONFIG = {
-            apiKey: 'sk-idwcpfgcybwegstjhihmsylzdomourwnbicpdnfqbirrknxd',
-            apiUrl: 'https://api.siliconflow.cn/v1/chat/completions',
-            model: 'deepseek-ai/DeepSeek-V3'  // 硅基流动的 DeepSeek 模型
+            apiKey: '8ceb1e51-6022-479f-97c4-f78a791ddbd6',
+            apiUrl: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
+            model: 'doubao-seed-1-6-thinking-250615'
         };
 
         // System Prompt for 五恒空调 sales
@@ -654,7 +654,7 @@
                 progressFill.style.width = '50%';
                 progressText.textContent = 'AI 正在深度分析...';
 
-                // Call SiliconFlow API
+                // Call 火山引擎 豆包 API
                 const response = await fetch(API_CONFIG.apiUrl, {
                     method: 'POST',
                     headers: {
