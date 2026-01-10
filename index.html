@@ -407,13 +407,6 @@
             <div class="panel">
                 <h2 class="panel-title">上传朋友圈截图</h2>
 
-                <div class="api-key-section">
-                    <label for="apiKey">DeepSeek API Key</label>
-                    <input type="password" id="apiKey" class="api-key-input" placeholder="输入你的 DeepSeek API Key">
-                    <p class="api-key-hint">
-                        没有 API Key？<a href="https://platform.deepseek.com/" target="_blank">点击获取</a>
-                    </p>
-                </div>
 
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-icon">📷</div>
@@ -466,10 +459,11 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // Configuration
-        const DEEPSEEK_CONFIG = {
-            apiUrl: 'https://api.deepseek.com/chat/completions',
-            model: 'deepseek-chat'
+        // Configuration - 硅基流动 API (SiliconFlow)
+        const API_CONFIG = {
+            apiKey: 'sk-idwcpfgcybwegstjhihmsylzdomourwnbicpdnfqbirrknxd',
+            apiUrl: 'https://api.siliconflow.cn/v1/chat/completions',
+            model: 'deepseek-ai/DeepSeek-V3'  // 硅基流动的 DeepSeek 模型
         };
 
         // System Prompt for 五恒空调 sales
@@ -546,7 +540,6 @@
         const copyBtn = document.getElementById('copyBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const resetBtn = document.getElementById('resetBtn');
-        const apiKeyInput = document.getElementById('apiKey');
         const toast = document.getElementById('toast');
 
         // Event Listeners
@@ -628,13 +621,6 @@
 
         // Start Analysis
         async function startAnalysis() {
-            const apiKey = apiKeyInput.value.trim();
-            if (!apiKey) {
-                showToast('请输入 DeepSeek API Key');
-                apiKeyInput.focus();
-                return;
-            }
-
             if (uploadedImages.length === 0) {
                 showToast('请上传至少一张朋友圈截图');
                 return;
@@ -668,15 +654,15 @@
                 progressFill.style.width = '50%';
                 progressText.textContent = 'AI 正在深度分析...';
 
-                // Call DeepSeek API
-                const response = await fetch(DEEPSEEK_CONFIG.apiUrl, {
+                // Call SiliconFlow API
+                const response = await fetch(API_CONFIG.apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
+                        'Authorization': `Bearer ${API_CONFIG.apiKey}`
                     },
                     body: JSON.stringify({
-                        model: DEEPSEEK_CONFIG.model,
+                        model: API_CONFIG.model,
                         messages: [
                             {
                                 role: 'system',
@@ -764,18 +750,6 @@
             }, 3000);
         }
 
-        // Load saved API key from localStorage
-        const savedApiKey = localStorage.getItem('deepseek_api_key');
-        if (savedApiKey) {
-            apiKeyInput.value = savedApiKey;
-        }
-
-        // Save API key when changed
-        apiKeyInput.addEventListener('blur', () => {
-            if (apiKeyInput.value.trim()) {
-                localStorage.setItem('deepseek_api_key', apiKeyInput.value.trim());
-            }
-        });
     </script>
 </body>
 </html>
