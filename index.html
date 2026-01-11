@@ -461,9 +461,9 @@
     <script>
         // Configuration - 火山引擎 豆包 API (支持图片分析)
         const API_CONFIG = {
-            apiKey: '8ceb1e51-6022-479f-97c4-f78a791ddbd6',
-            apiUrl: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
-            model: 'doubao-seed-1-6-thinking-250615'
+            apiKey: 'b77a56c1-f6ce-4577-9bb4-a85cc842ad97',
+            apiUrl: 'https://ark.cn-beijing.volces.com/api/v3/responses',
+            model: 'doubao-seed-1-6-250615'
         };
 
         // System Prompt for 五恒空调 sales
@@ -633,28 +633,27 @@
             progressText.textContent = '正在分析客户画像...';
 
             try {
-                // Build message content with images
-                const content = [
-                    {
-                        type: 'text',
-                        text: `请分析以下${uploadedImages.length}张朋友圈截图，为我生成客户画像和五恒空调系统的销售策略。`
-                    }
-                ];
-
-                // Add images
-                for (const img of uploadedImages) {
-                    content.push({
-                        type: 'image_url',
-                        image_url: {
-                            url: img.dataUrl
-                        }
-                    });
-                }
-
                 progressFill.style.width = '50%';
                 progressText.textContent = 'AI 正在深度分析...';
 
-                // Call 火山引擎 豆包 API
+                // Call 火山引擎 豆包 API (responses 格式)
+                // 构建 input 数组
+                const inputArray = [];
+
+                // 添加图片
+                for (const img of uploadedImages) {
+                    inputArray.push({
+                        type: 'input_image',
+                        image_url: img.dataUrl
+                    });
+                }
+
+                // 添加文本提示
+                inputArray.push({
+                    type: 'input_text',
+                    text: `${SYSTEM_PROMPT}\n\n请分析以上${uploadedImages.length}张朋友圈截图，为我生成客户画像和五恒空调系统的销售策略。`
+                });
+
                 const response = await fetch(API_CONFIG.apiUrl, {
                     method: 'POST',
                     headers: {
@@ -663,17 +662,12 @@
                     },
                     body: JSON.stringify({
                         model: API_CONFIG.model,
-                        messages: [
-                            {
-                                role: 'system',
-                                content: SYSTEM_PROMPT
-                            },
+                        input: [
                             {
                                 role: 'user',
-                                content: content
+                                content: inputArray
                             }
-                        ],
-                        max_tokens: 4000
+                        ]
                     })
                 });
 
@@ -685,7 +679,15 @@
                 }
 
                 const data = await response.json();
-                analysisResult = data.choices[0].message.content;
+                // responses API 返回格式：output.choices[0].message.content 或 output[0].content
+                if (data.choices && data.choices[0]) {
+                    analysisResult = data.choices[0].message?.content || data.choices[0].content;
+                } else if (data.output) {
+                    analysisResult = typeof data.output === 'string' ? data.output :
+                                    (data.output[0]?.content || JSON.stringify(data.output));
+                } else {
+                    analysisResult = JSON.stringify(data);
+                }
 
                 progressFill.style.width = '100%';
                 progressText.textContent = '分析完成！';
