@@ -6,393 +6,100 @@
     <title>客户画像分析器 @zs_space</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header { text-align: center; color: white; margin-bottom: 30px; }
+        header h1 { font-size: 2.2rem; margin-bottom: 8px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        header p { font-size: 1.1rem; opacity: 0.9; }
+        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 900px) { .main-content { grid-template-columns: 1fr; } }
+        .panel { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        .panel-title { font-size: 1.2rem; color: #333; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #667eea; }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+        /* 客户信息表单 */
+        .customer-info { margin-bottom: 20px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .info-item { display: flex; flex-direction: column; }
+        .info-item label { font-size: 13px; color: #666; margin-bottom: 4px; }
+        .info-item input, .info-item select {
+            padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;
         }
+        .info-item input:focus, .info-item select:focus { outline: none; border-color: #667eea; }
+        .info-hint { font-size: 12px; color: #999; margin-top: 8px; text-align: center; }
 
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        @media (max-width: 900px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .panel {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-        }
-
-        .panel-title {
-            font-size: 1.3rem;
-            color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
-        }
-
-        /* API Key Input */
-        .api-key-section {
-            margin-bottom: 20px;
-        }
-
-        .api-key-section label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #555;
-        }
-
-        .api-key-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        .api-key-input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .api-key-hint {
-            font-size: 12px;
-            color: #888;
-            margin-top: 6px;
-        }
-
-        .api-key-hint a {
-            color: #667eea;
-        }
-
-        /* Upload Area */
+        /* 上传区域 */
         .upload-area {
-            border: 3px dashed #ddd;
-            border-radius: 12px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: #fafafa;
-            margin-bottom: 20px;
+            border: 2px dashed #ddd; border-radius: 12px; padding: 30px;
+            text-align: center; cursor: pointer; background: #fafafa; margin-bottom: 16px;
         }
+        .upload-area:hover { border-color: #667eea; background: #f0f4ff; }
+        .upload-icon { font-size: 40px; margin-bottom: 10px; }
+        .upload-text { color: #666; font-size: 14px; }
+        .upload-text span { color: #667eea; font-weight: 600; }
 
-        .upload-area:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-
-        .upload-area.dragover {
-            border-color: #667eea;
-            background: #e8edff;
-        }
-
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        .upload-text {
-            color: #666;
-            font-size: 16px;
-        }
-
-        .upload-text span {
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        /* Image Preview Grid */
-        .preview-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .preview-item {
-            position: relative;
-            aspect-ratio: 1;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
+        /* 图片预览 */
+        .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-bottom: 16px; }
+        .preview-item { position: relative; aspect-ratio: 1; border-radius: 6px; overflow: hidden; }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
         .preview-item .remove-btn {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 24px;
-            height: 24px;
-            background: rgba(255,0,0,0.8);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 14px;
-            line-height: 24px;
-            display: none;
+            position: absolute; top: 2px; right: 2px; width: 20px; height: 20px;
+            background: rgba(255,0,0,0.8); color: white; border: none; border-radius: 50%;
+            cursor: pointer; font-size: 12px; line-height: 20px; display: none;
         }
+        .preview-item:hover .remove-btn { display: block; }
+        .image-count { display: inline-block; background: #667eea; color: white; padding: 3px 10px; border-radius: 15px; font-size: 13px; margin-bottom: 10px; }
 
-        .preview-item:hover .remove-btn {
-            display: block;
-        }
-
-        /* Analyze Button */
+        /* 按钮 */
         .analyze-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;
         }
+        .analyze-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+        .analyze-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .analyze-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
+        /* 进度 */
+        .progress-section { display: none; margin-top: 16px; }
+        .progress-section.active { display: block; }
+        .progress-bar { height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); width: 0%; transition: width 0.5s; }
+        .progress-text { text-align: center; color: #666; font-size: 13px; }
 
-        .analyze-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* Progress Section */
-        .progress-section {
-            display: none;
-            margin-top: 20px;
-        }
-
-        .progress-section.active {
-            display: block;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            width: 0%;
-            transition: width 0.5s;
-            animation: progress-animation 2s infinite;
-        }
-
-        @keyframes progress-animation {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-
-        .progress-text {
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-        }
-
-        /* Result Section */
-        .result-section {
-            display: none;
-        }
-
-        .result-section.active {
-            display: block;
-        }
-
+        /* 结果区域 */
+        .result-section { display: none; }
+        .result-section.active { display: block; }
         .result-content {
-            background: #f9f9f9;
-            border-radius: 12px;
-            padding: 24px;
-            max-height: 600px;
-            overflow-y: auto;
-            line-height: 1.8;
+            background: #f9f9f9; border-radius: 12px; padding: 20px;
+            max-height: 600px; overflow-y: auto; line-height: 1.8; font-size: 14px;
         }
+        .result-content h2 { color: #333; font-size: 1.3rem; margin: 20px 0 12px 0; padding-bottom: 6px; border-bottom: 2px solid #667eea; }
+        .result-content h2:first-child { margin-top: 0; }
+        .result-content h3 { color: #444; font-size: 1.1rem; margin: 16px 0 8px 0; }
+        .result-content p { color: #555; margin-bottom: 8px; }
+        .result-content ul { margin-left: 20px; margin-bottom: 12px; }
+        .result-content li { color: #555; margin-bottom: 4px; }
+        .result-content strong { color: #333; }
 
-        .result-content h2 {
-            color: #333;
-            font-size: 1.5rem;
-            margin: 20px 0 15px 0;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #667eea;
-        }
+        /* 操作按钮 */
+        .action-buttons { display: flex; gap: 8px; margin-top: 16px; }
+        .action-btn { flex: 1; padding: 10px; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; }
+        .copy-btn { background: #667eea; color: white; }
+        .download-btn { background: #28a745; color: white; }
+        .reset-btn { background: #dc3545; color: white; }
 
-        .result-content h3 {
-            color: #444;
-            font-size: 1.2rem;
-            margin: 15px 0 10px 0;
-        }
+        /* 空状态 */
+        .empty-state { text-align: center; padding: 50px 20px; color: #888; }
+        .empty-state .icon { font-size: 50px; margin-bottom: 16px; }
 
-        .result-content p {
-            color: #555;
-            margin-bottom: 10px;
-        }
-
-        .result-content ul {
-            margin-left: 20px;
-            margin-bottom: 15px;
-        }
-
-        .result-content li {
-            color: #555;
-            margin-bottom: 6px;
-        }
-
-        .result-content strong {
-            color: #333;
-        }
-
-        /* Action Buttons */
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .action-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .copy-btn {
-            background: #667eea;
-            color: white;
-        }
-
-        .copy-btn:hover {
-            background: #5568d8;
-        }
-
-        .download-btn {
-            background: #28a745;
-            color: white;
-        }
-
-        .download-btn:hover {
-            background: #218838;
-        }
-
-        .reset-btn {
-            background: #dc3545;
-            color: white;
-        }
-
-        .reset-btn:hover {
-            background: #c82333;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #888;
-        }
-
-        .empty-state .icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-
-        /* Watermark */
-        .watermark {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            color: rgba(255,255,255,0.6);
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        /* Toast Notification */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 1000;
-        }
-
-        .toast.show {
-            opacity: 1;
-        }
-
-        /* Image Count Badge */
-        .image-count {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
+        /* 水印和提示 */
+        .watermark { position: fixed; bottom: 20px; right: 20px; color: rgba(255,255,255,0.6); font-size: 14px; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 6px; font-size: 13px; opacity: 0; transition: opacity 0.3s; z-index: 1000; }
+        .toast.show { opacity: 1; }
     </style>
 </head>
 <body>
@@ -403,17 +110,87 @@
         </header>
 
         <div class="main-content">
-            <!-- Left Panel - Upload -->
             <div class="panel">
-                <h2 class="panel-title">上传朋友圈截图</h2>
+                <h2 class="panel-title">客户信息与截图</h2>
 
+                <!-- 客户已知信息 -->
+                <div class="customer-info">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>性别</label>
+                            <select id="gender">
+                                <option value="">未知</option>
+                                <option value="男">男</option>
+                                <option value="女">女</option>
+                            </select>
+                        </div>
+                        <div class="info-item">
+                            <label>年龄段</label>
+                            <select id="ageRange">
+                                <option value="">未知</option>
+                                <option value="25-35岁">25-35岁</option>
+                                <option value="35-45岁">35-45岁</option>
+                                <option value="45-55岁">45-55岁</option>
+                                <option value="55岁以上">55岁以上</option>
+                            </select>
+                        </div>
+                        <div class="info-item">
+                            <label>行业/职业</label>
+                            <input type="text" id="industry" placeholder="如：金融、IT、医生...">
+                        </div>
+                        <div class="info-item">
+                            <label>房屋面积</label>
+                            <select id="houseSize">
+                                <option value="">未知</option>
+                                <option value="100㎡以下">100㎡以下</option>
+                                <option value="100-150㎡">100-150㎡</option>
+                                <option value="150-200㎡">150-200㎡</option>
+                                <option value="200-300㎡">200-300㎡</option>
+                                <option value="300㎡以上/别墅">300㎡以上/别墅</option>
+                            </select>
+                        </div>
+                        <div class="info-item">
+                            <label>房屋类型</label>
+                            <select id="houseType">
+                                <option value="">未知</option>
+                                <option value="新房装修">新房装修</option>
+                                <option value="二手房翻新">二手房翻新</option>
+                                <option value="已入住改造">已入住改造</option>
+                                <option value="别墅">别墅</option>
+                            </select>
+                        </div>
+                        <div class="info-item">
+                            <label>子女情况</label>
+                            <select id="children">
+                                <option value="">未知</option>
+                                <option value="无子女">无子女</option>
+                                <option value="有婴幼儿(0-3岁)">有婴幼儿(0-3岁)</option>
+                                <option value="有学龄儿童">有学龄儿童</option>
+                                <option value="有青少年">有青少年</option>
+                                <option value="子女已成年">子女已成年</option>
+                            </select>
+                        </div>
+                        <div class="info-item">
+                            <label>老人赡养</label>
+                            <select id="elderly">
+                                <option value="">未知</option>
+                                <option value="无">无</option>
+                                <option value="有，同住">有，同住</option>
+                                <option value="有，不同住">有，不同住</option>
+                            </select>
+                        </div>
+                        <div class="info-item">
+                            <label>健康关注</label>
+                            <input type="text" id="healthConcern" placeholder="如：过敏、鼻炎、睡眠差...">
+                        </div>
+                    </div>
+                    <p class="info-hint">以上信息选填，填写越多分析越精准</p>
+                </div>
 
+                <!-- 上传区域 -->
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-icon">📷</div>
-                    <p class="upload-text">
-                        拖拽图片到这里，或 <span>点击上传</span><br>
-                        <small>建议上传5张以上朋友圈截图，效果更准确</small>
-                    </p>
+                    <p class="upload-text">拖拽图片到这里，或 <span>点击上传</span><br><small>建议上传5张以上朋友圈截图</small></p>
                 </div>
                 <input type="file" id="fileInput" multiple accept="image/*" hidden>
 
@@ -422,27 +199,20 @@
                     <div class="preview-grid" id="previewGrid"></div>
                 </div>
 
-                <button class="analyze-btn" id="analyzeBtn" disabled>
-                    生成销售策略
-                </button>
+                <button class="analyze-btn" id="analyzeBtn" disabled>生成销售策略</button>
 
                 <div class="progress-section" id="progressSection">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
                     <p class="progress-text" id="progressText">正在分析客户画像...</p>
                 </div>
             </div>
 
-            <!-- Right Panel - Results -->
             <div class="panel">
                 <h2 class="panel-title">分析报告</h2>
-
                 <div class="empty-state" id="emptyState">
                     <div class="icon">📊</div>
                     <p>上传客户朋友圈截图后<br>AI 将为您生成详细的销售策略</p>
                 </div>
-
                 <div class="result-section" id="resultSection">
                     <div class="result-content" id="resultContent"></div>
                     <div class="action-buttons">
@@ -459,68 +229,12 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // Configuration - 火山引擎 豆包 API (支持图片分析)
         const API_CONFIG = {
             apiKey: 'b77a56c1-f6ce-4577-9bb4-a85cc842ad97',
             apiUrl: 'https://ark.cn-beijing.volces.com/api/v3/responses',
             model: 'doubao-seed-1-6-250615'
         };
 
-        // System Prompt for 五恒空调 sales
-        const SYSTEM_PROMPT = `你是一个顶级的高端家居销售顾问，专注于五恒空调系统（恒温、恒湿、恒氧、恒洁、恒静）的销售。
-
-【五恒系统核心价值】
-- 恒温：全年室内温度保持20-26°C，告别忽冷忽热
-- 恒湿：智能湿度调节40-60%，皮肤不干燥、衣物不发霉
-- 恒氧：24小时新风，室内氧气充足，不憋闷
-- 恒洁：多重过滤PM2.5、甲醛、花粉，呵护呼吸健康
-- 恒静：静音运行，睡眠不被打扰
-
-【你的分析能力】
-你擅长通过分析客户的朋友圈内容，洞察以下信息：
-1. 客户的经济实力和消费层次（房产、汽车、旅行、消费品牌等）
-2. 客户的生活方式和品质追求（健康、养生、品质生活等）
-3. 客户的家庭结构（是否有老人、小孩、宠物等）
-4. 客户可能存在的痛点（过敏、睡眠问题、空气质量担忧等）
-5. 客户的决策风格（理性型、感性型、专家型等）
-
-【输出要求】
-请仔细分析用户上传的所有朋友圈截图，然后按照以下结构输出分析报告：
-
-## 客户画像分析报告
-
-### 1. 基本画像
-- 预估年龄段：
-- 性别推测：
-- 经济实力评估：（高/中高/中等）
-- 家庭结构判断：
-- 生活方式特点：
-
-### 2. 需求洞察
-- 健康关注度：
-- 品质生活追求：
-- 潜在痛点分析：
-
-### 3. 五恒系统价值匹配
-针对该客户，五恒系统的核心价值点：
-- 恒温价值：
-- 恒湿价值：
-- 恒氧价值：
-- 恒洁价值：
-- 恒静价值：
-
-### 4. 销售策略建议
-- 推荐切入点：
-- 开场话术示例：
-- 核心卖点强调顺序：
-- 可能的异议及应对：
-
-### 5. 成交评估
-- 成交可能性：高/中/低
-- 关键成功因素：
-- 建议跟进策略：`;
-
-        // State
         let uploadedImages = [];
         let analysisResult = '';
 
@@ -537,122 +251,169 @@
         const emptyState = document.getElementById('emptyState');
         const resultSection = document.getElementById('resultSection');
         const resultContent = document.getElementById('resultContent');
-        const copyBtn = document.getElementById('copyBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const resetBtn = document.getElementById('resetBtn');
         const toast = document.getElementById('toast');
+
+        // 获取客户信息
+        function getCustomerInfo() {
+            const info = [];
+            const gender = document.getElementById('gender').value;
+            const ageRange = document.getElementById('ageRange').value;
+            const industry = document.getElementById('industry').value;
+            const houseSize = document.getElementById('houseSize').value;
+            const houseType = document.getElementById('houseType').value;
+            const children = document.getElementById('children').value;
+            const elderly = document.getElementById('elderly').value;
+            const healthConcern = document.getElementById('healthConcern').value;
+
+            if (gender) info.push(`性别：${gender}`);
+            if (ageRange) info.push(`年龄段：${ageRange}`);
+            if (industry) info.push(`行业/职业：${industry}`);
+            if (houseSize) info.push(`房屋面积：${houseSize}`);
+            if (houseType) info.push(`房屋类型：${houseType}`);
+            if (children) info.push(`子女情况：${children}`);
+            if (elderly) info.push(`老人赡养：${elderly}`);
+            if (healthConcern) info.push(`健康关注：${healthConcern}`);
+
+            return info.length > 0 ? '\n\n【已知客户信息】\n' + info.join('\n') : '';
+        }
+
+        // 构建提示词
+        function buildPrompt() {
+            const customerInfo = getCustomerInfo();
+            return `你是一个顶级的高端家居销售顾问，专注于五恒空调系统（恒温、恒湿、恒氧、恒洁、恒静）的销售。
+
+【五恒系统核心价值】
+- 恒温：全年室内温度保持20-26°C，告别忽冷忽热
+- 恒湿：智能湿度调节40-60%，皮肤不干燥、衣物不发霉
+- 恒氧：24小时新风，室内氧气充足，不憋闷
+- 恒洁：多重过滤PM2.5、甲醛、花粉，呵护呼吸健康
+- 恒静：静音运行，睡眠不被打扰
+${customerInfo}
+
+请根据上传的朋友圈截图${customerInfo ? '和已知客户信息' : ''}进行分析，输出以下格式的报告：
+
+## 客户画像分析报告
+
+### 1. 基本画像
+- 经济实力评估：（高/中高/中等）
+- 家庭结构判断：
+- 生活方式特点：
+
+### 2. 需求洞察
+- 健康关注度：
+- 品质生活追求：
+- 潜在痛点分析：
+
+### 3. 五恒系统价值匹配
+
+针对该客户，五恒系统各功能的价值：
+
+- **恒温价值**：
+- **恒湿价值**：
+- **恒氧价值**：
+- **恒洁价值**：
+- **恒静价值**：
+
+### 4. 销售策略建议
+
+**推荐切入点**：
+
+**开场话术示例**：
+
+**核心卖点强调顺序**：
+1.
+2.
+3.
+
+**可能的异议及应对**：
+
+### 5. 成交评估
+- 成交可能性：高/中/低
+- 关键成功因素：
+- 建议跟进策略：`;
+        }
 
         // Event Listeners
         uploadArea.addEventListener('click', () => fileInput.click());
-        uploadArea.addEventListener('dragover', handleDragOver);
-        uploadArea.addEventListener('dragleave', handleDragLeave);
-        uploadArea.addEventListener('drop', handleDrop);
-        fileInput.addEventListener('change', handleFileSelect);
+        uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = '#667eea'; });
+        uploadArea.addEventListener('dragleave', e => { e.preventDefault(); uploadArea.style.borderColor = '#ddd'; });
+        uploadArea.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#ddd';
+            addImages(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+        });
+        fileInput.addEventListener('change', e => { addImages(Array.from(e.target.files)); fileInput.value = ''; });
         analyzeBtn.addEventListener('click', startAnalysis);
-        copyBtn.addEventListener('click', copyReport);
-        downloadBtn.addEventListener('click', downloadReport);
-        resetBtn.addEventListener('click', resetAll);
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            navigator.clipboard.writeText(analysisResult).then(() => showToast('报告已复制'));
+        });
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const blob = new Blob([analysisResult], { type: 'text/markdown' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `客户分析报告_${new Date().toISOString().slice(0,10)}.md`;
+            a.click();
+            showToast('报告已下载');
+        });
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            uploadedImages = [];
+            analysisResult = '';
+            updatePreview();
+            resultSection.classList.remove('active');
+            emptyState.style.display = 'block';
+            progressSection.classList.remove('active');
+        });
 
-        // Drag and Drop Handlers
-        function handleDragOver(e) {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        }
-
-        function handleDragLeave(e) {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-            addImages(files);
-        }
-
-        function handleFileSelect(e) {
-            const files = Array.from(e.target.files);
-            addImages(files);
-            fileInput.value = '';
-        }
-
-        // Add images to the list
         function addImages(files) {
             files.forEach(file => {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    uploadedImages.push({
-                        file: file,
-                        dataUrl: e.target.result
-                    });
+                reader.onload = e => {
+                    uploadedImages.push({ file, dataUrl: e.target.result });
                     updatePreview();
                 };
                 reader.readAsDataURL(file);
             });
         }
 
-        // Update preview grid
         function updatePreview() {
             if (uploadedImages.length === 0) {
                 previewContainer.style.display = 'none';
                 analyzeBtn.disabled = true;
                 return;
             }
-
             previewContainer.style.display = 'block';
             imageCount.textContent = `${uploadedImages.length} 张图片`;
-
-            previewGrid.innerHTML = uploadedImages.map((img, index) => `
+            previewGrid.innerHTML = uploadedImages.map((img, i) => `
                 <div class="preview-item">
-                    <img src="${img.dataUrl}" alt="Preview ${index + 1}">
-                    <button class="remove-btn" onclick="removeImage(${index})">×</button>
+                    <img src="${img.dataUrl}" alt="Preview">
+                    <button class="remove-btn" onclick="removeImage(${i})">×</button>
                 </div>
             `).join('');
-
             analyzeBtn.disabled = false;
         }
 
-        // Remove image
         window.removeImage = function(index) {
             uploadedImages.splice(index, 1);
             updatePreview();
         };
 
-        // Start Analysis
         async function startAnalysis() {
-            if (uploadedImages.length === 0) {
-                showToast('请上传至少一张朋友圈截图');
-                return;
-            }
+            if (uploadedImages.length === 0) { showToast('请上传至少一张截图'); return; }
 
-            // Show progress
             analyzeBtn.disabled = true;
             progressSection.classList.add('active');
             progressFill.style.width = '30%';
-            progressText.textContent = '正在分析客户画像...';
+            progressText.textContent = '正在上传图片...';
 
             try {
+                const inputArray = [];
+                for (const img of uploadedImages) {
+                    inputArray.push({ type: 'input_image', image_url: img.dataUrl });
+                }
+                inputArray.push({ type: 'input_text', text: buildPrompt() });
+
                 progressFill.style.width = '50%';
                 progressText.textContent = 'AI 正在深度分析...';
-
-                // Call 火山引擎 豆包 API (responses 格式)
-                // 构建 input 数组
-                const inputArray = [];
-
-                // 添加图片
-                for (const img of uploadedImages) {
-                    inputArray.push({
-                        type: 'input_image',
-                        image_url: img.dataUrl
-                    });
-                }
-
-                // 添加文本提示
-                inputArray.push({
-                    type: 'input_text',
-                    text: `${SYSTEM_PROMPT}\n\n请分析以上${uploadedImages.length}张朋友圈截图，为我生成客户画像和五恒空调系统的销售策略。`
-                });
 
                 const response = await fetch(API_CONFIG.apiUrl, {
                     method: 'POST',
@@ -662,37 +423,54 @@
                     },
                     body: JSON.stringify({
                         model: API_CONFIG.model,
-                        input: [
-                            {
-                                role: 'user',
-                                content: inputArray
-                            }
-                        ]
+                        input: [{ role: 'user', content: inputArray }]
                     })
                 });
 
                 progressFill.style.width = '80%';
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error?.message || `API 请求失败: ${response.status}`);
+                    const err = await response.json();
+                    throw new Error(err.error?.message || `请求失败: ${response.status}`);
                 }
 
                 const data = await response.json();
-                // responses API 返回格式：output.choices[0].message.content 或 output[0].content
-                if (data.choices && data.choices[0]) {
-                    analysisResult = data.choices[0].message?.content || data.choices[0].content;
-                } else if (data.output) {
-                    analysisResult = typeof data.output === 'string' ? data.output :
-                                    (data.output[0]?.content || JSON.stringify(data.output));
+
+                // 解析返回结果 - 处理 responses API 的特殊格式
+                let rawText = '';
+                if (data.output && Array.isArray(data.output)) {
+                    // 遍历 output 数组，找到 summary_text 类型的内容
+                    for (const item of data.output) {
+                        if (item.type === 'summary_text' && item.text) {
+                            rawText = item.text;
+                            break;
+                        } else if (item.type === 'message' && item.content) {
+                            rawText = item.content;
+                            break;
+                        }
+                    }
+                    // 如果还没找到，尝试其他格式
+                    if (!rawText && data.output[0]) {
+                        rawText = data.output[0].text || data.output[0].content || JSON.stringify(data.output[0]);
+                    }
+                } else if (data.choices && data.choices[0]) {
+                    rawText = data.choices[0].message?.content || data.choices[0].text || '';
+                } else if (typeof data.output === 'string') {
+                    rawText = data.output;
                 } else {
-                    analysisResult = JSON.stringify(data);
+                    rawText = JSON.stringify(data, null, 2);
                 }
+
+                // 清理文本：替换 \n 为真正的换行，移除多余格式
+                analysisResult = rawText
+                    .replace(/\\n/g, '\n')  // 替换转义的换行符
+                    .replace(/\\t/g, '  ')  // 替换制表符
+                    .replace(/\\\"/g, '"')  // 替换转义的引号
+                    .trim();
 
                 progressFill.style.width = '100%';
                 progressText.textContent = '分析完成！';
 
-                // Show result
                 setTimeout(() => {
                     progressSection.classList.remove('active');
                     emptyState.style.display = 'none';
@@ -709,49 +487,11 @@
             }
         }
 
-        // Copy report
-        function copyReport() {
-            navigator.clipboard.writeText(analysisResult).then(() => {
-                showToast('报告已复制到剪贴板');
-            }).catch(() => {
-                showToast('复制失败，请手动复制');
-            });
-        }
-
-        // Download report
-        function downloadReport() {
-            const blob = new Blob([analysisResult], { type: 'text/markdown' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `客户画像分析报告_${new Date().toISOString().slice(0,10)}.md`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('报告已下载');
-        }
-
-        // Reset all
-        function resetAll() {
-            uploadedImages = [];
-            analysisResult = '';
-            updatePreview();
-            resultSection.classList.remove('active');
-            emptyState.style.display = 'block';
-            progressSection.classList.remove('active');
-            progressFill.style.width = '0%';
-        }
-
-        // Show toast notification
         function showToast(message) {
             toast.textContent = message;
             toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
-
     </script>
 </body>
 </html>
